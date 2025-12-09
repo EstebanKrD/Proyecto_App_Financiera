@@ -35,7 +35,8 @@ public class AutenticacionUsuario {
                 System.out.println("Correo inválido.");
                 continue;
             }
-
+            /*esta vez se usa containskey por el hashmap para verificar si la clave existe.
+            Y porque no contains este se usa para los arraylist aunqu tiene la misma estructura pero contains es mas para listas o objetos. */
             if (contrasenas.containsKey(correo)) {
                 System.out.println("Ya existe ese correo.");
                 continue;
@@ -80,5 +81,7 @@ public class AutenticacionUsuario {
         if (!contrasenas.containsKey(correo)) return false;
 
         return contrasenas.get(correo).equals(pass);
+
+        
     }
 }

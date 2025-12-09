@@ -12,7 +12,6 @@ public class MotorIA {
         return "Otro";
     }
 
-
     public static String alertaGastoExcesivo(double gasto) {
         if (gasto > 50000) return "ALERTA: Gasto muy alto";
         return "Gasto normal";

@@ -69,14 +69,13 @@ public class Menus {
     }
 
 
-
     public static void menuFinanciero(Scanner scanner, String correo) {
 
         boolean activo = true;
 
         while (activo) {
 
-            System.out.println("\n===== Menú Financiero =====");
+            System.out.println("\n --------- Menú Financiero ---------");
             System.out.println("1. Registrar ingreso");
             System.out.println("2. Registrar gasto con IA");
             System.out.println("3. Total ingresos");
