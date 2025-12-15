@@ -4,141 +4,132 @@ public class Menus {
 
     public static void menuPrincipal() {
 
+        Usuarios.cargarDesdeArchivo();
         Scanner scanner = new Scanner(System.in);
+
         boolean continuar = true;
 
-        System.out.println("------- Bienvenido a FinMind -------");
-
         while (continuar) {
-
-            System.out.println("\n1). Registrar usuario");
-            System.out.println("2). Iniciar sesión");
-            System.out.println("3). Salir");
+            System.out.println("\n======= FinMind =======");
+            System.out.println("1) Registrar usuario");
+            System.out.println("2) Iniciar sesión");
+            System.out.println("3) Salir");
             System.out.print("Opción: ");
-
-            int opcion = scanner.nextInt();
-            scanner.nextLine(); 
+            String opcion = scanner.nextLine();
 
             switch (opcion) {
-
-                case 1:
-                    boolean registrado = AutenticacionUsuario.registrarUsuario(scanner);
-                    if (registrado) System.out.println("Registro completado.");
+                case "1":
+                    AutenticacionUsuario.registrarUsuario(scanner);
                     break;
 
-                case 2:
-                    System.out.print("Correo: ");
-                    String correoIngreso = scanner.nextLine();
-
-                    System.out.print("Contraseña: ");
-                    String passIngreso = scanner.nextLine();
-
-                    boolean loginCorrecto = AutenticacionUsuario.login(correoIngreso, passIngreso);
-
-                    if (!loginCorrecto) {
-                        System.out.println("Credenciales incorrectas.");
-                        break;
+                case "2":
+                    String correo = AutenticacionUsuario.login(scanner);
+                    if (correo != null) {
+                        menuFinanciero(correo);
                     }
-
-                    String otp = MotorIA.generarOTP();
-                    System.out.println("Código de verificación: " + otp);
-
-                    System.out.print("Ingrese el código OTP: ");
-                    String otpIngresado = scanner.nextLine();
-
-                    if (!otpIngresado.equals(otp)) {
-                        System.out.println("Código OTP incorrecto.");
-                        break;
-                    }
-
-                    System.out.println("Inicio de sesión exitoso.\n");
-                    menuFinanciero(scanner, correoIngreso);
                     break;
 
-                case 3:
-                    System.out.println("Gracias por usar FinMind.");
+                case "3":
                     continuar = false;
+                    System.out.println("Saliendo...");
                     break;
 
                 default:
                     System.out.println("Opción inválida.");
             }
         }
-
-        scanner.close();
     }
 
+    public static void menuFinanciero(String correo) {
 
-    public static void menuFinanciero(Scanner scanner, String correo) {
-
+        Scanner scanner = new Scanner(System.in);
         boolean activo = true;
 
         while (activo) {
 
             System.out.println("\n --------- Menú Financiero ---------");
-            System.out.println("1. Registrar ingreso");
-            System.out.println("2. Registrar gasto con IA");
-            System.out.println("3. Total ingresos");
-            System.out.println("4. Ingreso mayor");
-            System.out.println("5. Ingreso menor");
-            System.out.println("6. Promedio ingresos");
-            System.out.println("7. Volver");
+            System.out.println("1) Registrar ingreso");
+            System.out.println("2) Registrar gasto");
+            System.out.println("3) Total ingresos");
+            System.out.println("4) Ingreso mayor");
+            System.out.println("5) Ingreso menor");
+            System.out.println("6) Promedio ingresos");
+            System.out.println("7) Mostrar datos por día");
+            System.out.println("8) Cerrar sesión");
             System.out.print("Opción: ");
 
-            int opcion = scanner.nextInt();
-            scanner.nextLine();
+            String opcion = scanner.nextLine();
 
             switch (opcion) {
 
-                case 1:
+                case "1":
                     System.out.print("Día (0-6): ");
-                    int diaIng = scanner.nextInt();
+                    int diaIngreso = Integer.parseInt(scanner.nextLine());
 
-                    System.out.print("Valor: ");
-                    double valorIng = scanner.nextDouble();
+                    System.out.print("Valor del ingreso: ");
+                    double valorIngreso = Double.parseDouble(scanner.nextLine());
 
-                    Finanzas.registrarIngreso(correo, diaIng, valorIng);
+                    Finanzas.registrarIngreso(correo, diaIngreso, valorIngreso);
+                    System.out.println("Ingreso registrado.");
                     break;
 
-                case 2:
+                case "2":
                     System.out.print("Día (0-6): ");
-                    int dia = scanner.nextInt();
-                    scanner.nextLine();
+                    int diaGasto = Integer.parseInt(scanner.nextLine());
 
                     System.out.print("Descripción del gasto: ");
-                    String descripcion = scanner.nextLine();
-
-                    String categoria = MotorIA.clasificarGasto(descripcion);
+                    String descripcionGasto = scanner.nextLine();
 
                     System.out.print("Valor del gasto: ");
-                    double gasto = scanner.nextDouble();
+                    double valorGasto = Double.parseDouble(scanner.nextLine());
 
-                    Finanzas.registrarGasto(correo, dia, gasto);
+                    Finanzas.registrarGasto(correo, diaGasto, valorGasto);
 
-                    System.out.println("Categoria IA: " + categoria);
-                    System.out.println(MotorIA.alertaGastoExcesivo(gasto));
-                    System.out.println(MotorIA.alertaCategoria(
-                        categoria, gasto, Finanzas.promedioIngresos(correo)
-                    ));
+                    String categoriaIA = MotorIA.clasificarGasto(descripcionGasto);
+                    String analisisIA = MotorIA.analizarGastoConIA(
+                            descripcionGasto,
+                            valorGasto,
+                            categoriaIA,
+                            correo);
+
+                    System.out.println("\n--- Análisis de IA ---");
+                    System.out.println("Categoría: " + categoriaIA);
+                    System.out.println(analisisIA);
                     break;
 
-                case 3:
+                case "3":
                     System.out.println("Total ingresos: " + Finanzas.totalIngresos(correo));
                     break;
 
-                case 4:
+                case "4":
                     System.out.println("Ingreso mayor: " + Finanzas.ingresoMayor(correo));
                     break;
 
-                case 5:
+                case "5":
                     System.out.println("Ingreso menor: " + Finanzas.ingresoMenor(correo));
                     break;
 
-                case 6:
+                case "6":
                     System.out.println("Promedio ingresos: " + Finanzas.promedioIngresos(correo));
                     break;
 
-                case 7:
+                case "7":
+                    double[] ingresosPorDia = Finanzas.getIngresosArray(correo);
+                    double[] gastosPorDia = Finanzas.getGastosArray(correo);
+
+                    System.out.println("--- Ingresos por día ---");
+                    for (int i = 0; i < ingresosPorDia.length; i++) {
+                        System.out.println("Día " + i + ": " + ingresosPorDia[i]);
+                    }
+
+                    System.out.println("--- Gastos por día ---");
+                    for (int i = 0; i < gastosPorDia.length; i++) {
+                        System.out.println("Día " + i + ": " + gastosPorDia[i]);
+                    }
+                    break;
+
+                case "8":
+                    System.out.println("Sesión cerrada.");
                     activo = false;
                     break;
 

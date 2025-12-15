@@ -1,87 +1,133 @@
-import java.util.HashMap;
 import java.util.Scanner;
 
 public class AutenticacionUsuario {
 
-    public static HashMap<String, String> nombres = new HashMap<>();
-    public static HashMap<String, String> cedulas = new HashMap<>();
-    public static HashMap<String, String> fechasNac = new HashMap<>();
-    public static HashMap<String, String> fechasExp = new HashMap<>();
-    public static HashMap<String, String> contrasenas = new HashMap<>();
-
-
+    // Registrar usuario por consola
     public static boolean registrarUsuario(Scanner scanner) {
 
         System.out.println("\n--- REGISTRO DE USUARIO ---");
 
         System.out.print("Nombre completo: ");
-        String nombre = scanner.nextLine();
+        String nombreUsuario = scanner.nextLine();
 
         System.out.print("Número de cédula: ");
-        String cedula = scanner.nextLine();
+        String numeroCedula = scanner.nextLine();
 
-        System.out.print("Fecha de nacimiento: ");
-        String fechaN = scanner.nextLine();
+        System.out.print("Fecha de nacimiento (YYYY-MM-DD): ");
+        String fechaNacimiento = scanner.nextLine();
 
-        System.out.print("Fecha de expedición: ");
-        String fechaE = scanner.nextLine();
+        // Validar mayoría de edad
+        try {
+            String[] partesFecha = fechaNacimiento.split("-");
+            int anioNacimiento = Integer.parseInt(partesFecha[0]);
+            int anioActual = java.time.LocalDate.now().getYear();
+            int edad = anioActual - anioNacimiento;
 
-        String correo;
+            if (edad < 18) {
+                System.out.println("Debes ser mayor de 18 años.");
+                return false;
+            }
+        } catch (Exception excepcionFecha) {
+            System.out.println("Formato de fecha incorrecto.");
+            return false;
+        }
+
+        System.out.print("Fecha de expedición (YYYY-MM-DD): ");
+        String fechaExpedicion = scanner.nextLine();
+
+        String correoElectronico;
         while (true) {
             System.out.print("Correo electrónico: ");
-            correo = scanner.nextLine();
+            correoElectronico = scanner.nextLine().trim().toLowerCase();
 
-            if (!correo.contains("@") || !correo.contains(".")) {
+            if (!correoElectronico.contains("@") || !correoElectronico.contains(".")) {
                 System.out.println("Correo inválido.");
                 continue;
             }
-            /*esta vez se usa containskey por el hashmap para verificar si la clave existe.
-            Y porque no contains este se usa para los arraylist aunqu tiene la misma estructura pero contains es mas para listas o objetos. */
-            if (contrasenas.containsKey(correo)) {
-                System.out.println("Ya existe ese correo.");
-                continue;
-            }
 
+            if (Usuarios.existe(correoElectronico)) {
+                System.out.println("Este correo ya está registrado.");
+                return false;
+            }
             break;
         }
 
-        String pass;
+        String contrasena;
         while (true) {
-            System.out.print("Contraseña (máx 10 caracteres): ");
-            pass = scanner.nextLine();
+            System.out.print("Contraseña (4-20 caracteres): ");
+            contrasena = scanner.nextLine();
 
-            if (pass.length() >= 1 && pass.length() <= 10) break;
+            if (contrasena.length() >= 4 && contrasena.length() <= 20)
+                break;
 
             System.out.println("Contraseña inválida.");
         }
 
-        String otp = MotorIA.generarOTP();
-        System.out.println("Código OTP: " + otp);
+        String codigoOtp = MotorIA.generarOTP();
+        System.out.println("Código OTP: " + codigoOtp);
 
-        System.out.print("Ingrese OTP: ");
-        String otpIng = scanner.nextLine();
+        System.out.print("Ingrese el OTP: ");
+        String otpIngresado = scanner.nextLine();
 
-        if (!otpIng.equals(otp)) {
-            System.out.println("OTP incorrecto. Registro cancelado.");
+        if (!otpIngresado.equals(codigoOtp)) {
+            System.out.println("OTP incorrecto.");
             return false;
         }
 
-        nombres.put(correo, nombre);
-        cedulas.put(correo, cedula);
-        fechasNac.put(correo, fechaN);
-        fechasExp.put(correo, fechaE);
-        contrasenas.put(correo, pass);
+        UsuarioNormal usuarioNuevo = new UsuarioNormal(
+                nombreUsuario,
+                numeroCedula,
+                fechaNacimiento,
+                fechaExpedicion,
+                correoElectronico,
+                contrasena);
 
+        boolean registroExitoso = Usuarios.agregarUsuario(usuarioNuevo);
+
+        if (!registroExitoso) {
+            System.out.println("No se pudo guardar el usuario.");
+            return false;
+        }
+
+        System.out.println("Registro exitoso.");
         return true;
     }
 
+    public static String login(Scanner scanner) {
 
-    public static boolean login(String correo, String pass) {
+        System.out.println("\n--- INICIO DE SESIÓN ---");
 
-        if (!contrasenas.containsKey(correo)) return false;
+        System.out.print("Correo: ");
+        String correoElectronico = scanner.nextLine().trim().toLowerCase();
 
-        return contrasenas.get(correo).equals(pass);
+        System.out.print("Contraseña: ");
+        String contrasenaIngresada = scanner.nextLine();
 
-        
+        if (!Usuarios.existe(correoElectronico)) {
+            System.out.println("Usuario no registrado.");
+            return null;
+        }
+
+        UsuarioNormal usuarioRegistrado = Usuarios.obtener(correoElectronico);
+
+        if (!usuarioRegistrado.getContrasena().equals(contrasenaIngresada)) {
+            System.out.println("Contraseña incorrecta.");
+            return null;
+        }
+
+        // OTP login
+        String codigoOtp = MotorIA.generarOTP();
+        System.out.println("Código OTP: " + codigoOtp);
+
+        System.out.print("Ingrese el OTP: ");
+        String otpIngresado = scanner.nextLine();
+
+        if (!otpIngresado.equals(codigoOtp)) {
+            System.out.println("OTP incorrecto.");
+            return null;
+        }
+
+        System.out.println("Inicio de sesión exitoso.");
+        return correoElectronico;
     }
 }
